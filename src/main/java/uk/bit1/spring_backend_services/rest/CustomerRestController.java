@@ -14,6 +14,11 @@ public class CustomerRestController {
     @Autowired
     private CustomerService customerService;
 
+    @GetMapping("/addCustomer")
+    public CustomerDto addCustomer(CustomerDto customerDto) {
+        return customerService.addCustomer(customerDto);
+    }
+
     @GetMapping("/customers")
     public List<CustomerDto> getAllCustomers() {
         return customerService.getAllCustomers();

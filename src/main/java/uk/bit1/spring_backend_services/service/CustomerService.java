@@ -26,6 +26,12 @@ public class CustomerService {
         return  convertToDto(customer.get());
     }
 
+    public CustomerDto addCustomer(CustomerDto customerDto) {
+        Customer customer = convertFromDto(customerDto);
+        customerRepository.save(customer);
+        return convertToDto(customer);
+    }
+
     private CustomerDto convertToDto(Customer customer) {
         return new CustomerDto(
                 customer.getId(),
