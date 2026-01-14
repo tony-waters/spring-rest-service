@@ -33,12 +33,10 @@ public class CustomerRestControllerTest {
 
     @Test
     void addManyCustomers() {
-        for(int i=0; i<100; i++) {
-            String firstName = "Jo${i}";
-            String lastName = "Bloggs${i}";
-            customerRestController.addCustomer(new CustomerDto(null, lastName, firstName, null));
+        for(int i=0; i<1000; i++) {
+            customerRestController.addCustomer(new CustomerDto(null, "Bloggs${i}", "Jo${i}", null));
         }
         List<CustomerDto> customerDtos = customerRestController.getAllCustomers();
-        assertEquals(100L, customerDtos.size());
+        assertEquals(1000L, customerDtos.size());
     }
 }
