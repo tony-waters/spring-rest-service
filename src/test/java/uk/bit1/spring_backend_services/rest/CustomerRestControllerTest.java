@@ -1,5 +1,6 @@
 package uk.bit1.spring_backend_services.rest;
 
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -10,6 +11,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
+@Transactional
 public class CustomerRestControllerTest {
 
     @Autowired
@@ -23,9 +25,9 @@ public class CustomerRestControllerTest {
 
     @Test
     void addCustomer() {
-        CustomerDto customerDto = new CustomerDto(null, "Bloggs", "Jo", null);
-        assertNull(customerDto.id());
-        CustomerDto returnedCustomerDto = customerRestController.addCustomer(customerDto);
+        CustomerDto newCustomerDto = new CustomerDto(null, "Bloggs", "Jo", null);
+        CustomerDto returnedCustomerDto = customerRestController.addCustomer(newCustomerDto);
+        assertNull(newCustomerDto.id());
         assertNotNull(returnedCustomerDto.id());
     }
 }
