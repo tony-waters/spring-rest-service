@@ -7,10 +7,8 @@ import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import uk.bit1.spring_backend_services.entity.Customer;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest(showSql = true)
 public class CustomerRepositoryCrudTest {

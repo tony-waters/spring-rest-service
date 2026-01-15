@@ -13,9 +13,13 @@ import java.util.Optional;
 @Service
 public class CustomerService {
 
-    private final CustomerRepository customerRepository;
+    private CustomerRepository customerRepository;
 
-    private final CustomerMapper customerMapper;
+    private CustomerMapper customerMapper;
+
+//    public CustomerService() {
+//
+//    }
 
     public CustomerService(CustomerRepository customerRepository, CustomerMapper customerMapper) {
         this.customerRepository = customerRepository;
