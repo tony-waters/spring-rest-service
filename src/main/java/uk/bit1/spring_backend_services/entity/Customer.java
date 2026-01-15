@@ -2,7 +2,8 @@ package uk.bit1.spring_backend_services.entity;
 
 import jakarta.persistence.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class Customer {
@@ -18,7 +19,7 @@ public class Customer {
     @OneToMany(mappedBy = "id", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Order> orders = new ArrayList<>();
 
-    protected Customer() {}
+    public Customer() {}
 
     public Customer(String lastName, String firstName) {
         this.lastName= lastName;
@@ -28,6 +29,11 @@ public class Customer {
     public Customer(Long id, String lastName, String firstName) {
         this(lastName, firstName);
         this.id = id;
+    }
+
+    public Customer(Long id, String lastName, String firstName, List<Order> orders) {
+        this(id, lastName, firstName);
+        this.orders = orders;
     }
 
     public void addOrder(Order order) {

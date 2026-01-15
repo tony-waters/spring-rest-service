@@ -6,7 +6,6 @@ import uk.bit1.spring_backend_services.dto.CustomerDto;
 import uk.bit1.spring_backend_services.entity.Customer;
 import uk.bit1.spring_backend_services.repository.CustomerRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,42 +17,24 @@ public class CustomerService {
 
     public List<CustomerDto> getAllCustomers() {
         List<Customer> customers = customerRepository.findAll();
-        return convertToDtos(customers);
+        return CustomerMapper.INSTANCE.map(customers);
+    }
+
+    public List<CustomerDto> getAllCustomersWithOrders() {
+        List<Customer> customers = customerRepository.findByOrdersNotEmpty();
+        return CustomerMapper.INSTANCE.map(customers);
     }
 
     public CustomerDto getCustomerById(Long id) {
         Optional<Customer> customer = customerRepository.findById(id);
-        return  convertToDto(customer.get());
+        return  CustomerMapper.INSTANCE.toDto(customer.get());
     }
 
     public CustomerDto addCustomer(CustomerDto customerDto) {
-        Customer customer = convertFromDto(customerDto);
+        Customer customer = CustomerMapper.INSTANCE.toEntity(customerDto);
         customerRepository.save(customer);
-        return convertToDto(customer);
+        return CustomerMapper.INSTANCE.toDto(customer);
     }
 
-    private CustomerDto convertToDto(Customer customer) {
-        return new CustomerDto(
-                customer.getId(),
-                customer.getLastName(),
-                customer.getFirstName(),
-                null
-        );
-    }
 
-    private List<CustomerDto> convertToDtos(List<Customer> customers) {
-        List<CustomerDto> customerDtos = new ArrayList<CustomerDto>();
-        for (Customer customer : customers) {
-            customerDtos.add(convertToDto(customer));
-        }
-        return customerDtos;
-    }
-
-    private Customer convertFromDto(CustomerDto customerDto) {
-        return new Customer(
-                customerDto.id(),
-                customerDto.lastName(),
-                customerDto.firstName()
-        );
-    }
 }

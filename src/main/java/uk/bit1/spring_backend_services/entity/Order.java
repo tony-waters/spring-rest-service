@@ -16,19 +16,27 @@ public class Order {
 
     private Boolean fulfilled = false;
 
-    @ManyToMany
-    @JoinTable
-    private List<Product> products = new ArrayList<>();
-
     @ManyToOne
     @JoinColumn(name = "customer_id")
     private Customer customer;
 
-    protected Order() {
+    @ManyToMany
+    @JoinTable
+    private List<Product> products = new ArrayList<>();
+
+    public Order() {
     }
 
     public Order(String description) {
         this.description = description;
+    }
+
+    public Order(Long id, String description, Boolean fulfilled, Customer customer, List<Product> products) {
+        this(description);
+        this.id = id;
+        this.fulfilled = fulfilled;
+        this.customer = customer;
+        this.products = products;
     }
 
     public void addProduct(Product product) {
