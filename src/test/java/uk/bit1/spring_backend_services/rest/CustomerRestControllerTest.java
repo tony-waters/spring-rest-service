@@ -40,7 +40,7 @@ public class CustomerRestControllerTest {
         for(int i=0; i<100; i++) {
             customerRestController.addCustomer(new CustomerDto(null, "Bloggs${i}", "Jo${i}", null));
         }
-        for(int i=0; i<3; i++) {
+        for(int i=100; i<103; i++) {
             List<OrderDto> orders = new ArrayList<>();
             orders.add(new OrderDto(null, "Test Order ${i}", Boolean.FALSE, null, null));
             customerRestController.addCustomer(new CustomerDto(null, "Bloggs${i}", "Jo${i}", orders));
