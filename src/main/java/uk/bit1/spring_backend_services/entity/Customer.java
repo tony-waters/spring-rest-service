@@ -16,7 +16,7 @@ public class Customer {
 
     private String firstName;
 
-    @OneToMany(mappedBy = "id", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Order> orders = new ArrayList<>();
 
     public Customer() {}
@@ -37,6 +37,9 @@ public class Customer {
     }
 
     public void addOrder(Order order) {
+        if(orders == null) {
+            orders = new ArrayList<>();
+        }
         orders.add(order);
         order.setCustomer(this);
     }

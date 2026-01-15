@@ -79,40 +79,35 @@ public class CustomerRepositoryTest {
         assertEquals("Mickey", customer.getFirstName());
     }
 
-//    @Test
-//    void customer_can_have_zero_orders() {
-//        assertDoesNotThrow(() -> testCustomer.getOrders().size());
-//        assertEquals(0, testCustomer.getOrders().size());
-//    }
-//
-//    @Test
-//    void customer_can_have_orders_added() {
-//        testCustomer.addOrder(new Order("Order 1 for testOrder"));
-//        testCustomer.addOrder(new Order("Order 2 for testOrder"));
-//        customerRepository.save(testCustomer);
-//
-//        Customer customer = customerRepository.findById(testCustomer.getId()).orElse(null);
-//        List<Order> orders = customer.getOrders();
-//        assertEquals(2, orders.size());
-//        assertEquals("Order 1 for testOrder", orders.get(0).getDescription());
-//        assertEquals("Order 2 for testOrder", orders.get(1).getDescription());
-//    }
-//
-//    @Test
-//    void customer_can_have_orders_removed() {
-//        Order order1 = new Order("Order 1 for testOrder");
-//        Order order2 = new Order("Order 2 for testOrder");
-//        testCustomer.addOrder(order1);
-//        testCustomer.addOrder(order2);
-//        customerRepository.save(testCustomer);
-//        testCustomer.removeOrder(testCustomer.getOrders().get(0));
-//        customerRepository.save(testCustomer);
-//
-//        Customer customer = customerRepository.findById(testCustomer.getId()).orElse(null);
-//        List<Order> orders = customer.getOrders();
-//        assertEquals(1, orders.size());
-//        assertEquals("Order 2 for testOrder", orders.get(0).getDescription());
-//    }
+    @Test
+    void customer_can_have_orders() {
+        assertDoesNotThrow(() -> testCustomer.getOrders().size());
+        assertEquals(2, testCustomer.getOrders().size());
+    }
+
+    @Test
+    void customer_can_have_orders_added() {
+        testCustomer.addOrder(new Order("Order 3 for testOrder"));
+        testCustomer.addOrder(new Order("Order 4 for testOrder"));
+        customerRepository.save(testCustomer);
+
+        Customer customer = customerRepository.findById(testCustomer.getId()).orElse(null);
+        List<Order> orders = customer.getOrders();
+        assertEquals(4, orders.size());
+        assertEquals("Order 3 for testOrder", orders.get(2).getDescription());
+        assertEquals("Order 4 for testOrder", orders.get(3).getDescription());
+    }
+
+    @Test
+    void customer_can_have_orders_removed() {
+        testCustomer.removeOrder(testCustomer.getOrders().get(0));
+        customerRepository.save(testCustomer);
+
+        Customer customer = customerRepository.findById(testCustomer.getId()).orElse(null);
+        List<Order> orders = customer.getOrders();
+        assertEquals(1, orders.size());
+        assertEquals("Order 2 for testOrder", orders.get(0).getDescription());
+    }
 
     @Test
     void customer_orders_can_be_deletes() {

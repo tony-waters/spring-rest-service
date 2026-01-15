@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.bit1.spring_backend_services.dto.CustomerDto;
+import uk.bit1.spring_backend_services.dto.OrderDto;
 import uk.bit1.spring_backend_services.service.CustomerService;
 
 import java.util.List;
@@ -22,6 +23,11 @@ public class CustomerRestController {
     @GetMapping("/addCustomer")
     public CustomerDto addCustomer(CustomerDto customerDto) {
         return customerService.addCustomer(customerDto);
+    }
+
+    @GetMapping("/addOrderToCustomer")
+    public CustomerDto addOrderToCustomer(Long customerId, String orderDescription) {
+        return customerService.addOrderToCustomer(customerId, orderDescription);
     }
 
     @GetMapping("/customers")

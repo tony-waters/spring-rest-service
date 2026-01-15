@@ -64,8 +64,8 @@ public class CustomerRepositoryCrudTest {
         entityManager.persist(newCustomer2);
         // test using Repository
         List<Customer> customers = customerRepository.findByLastName("Bloggs");
-        assertEquals(1, customers.size());
         Customer retrievedCustomer = customers.get(0);
+        assertEquals(1, customers.size());
         assertEquals(newCustomer1.getFirstName(), retrievedCustomer.getFirstName());
         assertEquals(newCustomer1.getLastName(), retrievedCustomer.getLastName());
     }

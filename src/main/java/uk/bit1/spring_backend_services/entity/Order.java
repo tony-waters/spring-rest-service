@@ -20,9 +20,9 @@ public class Order {
     @JoinColumn(name = "customer_id")
     private Customer customer;
 
-    @ManyToMany
-    @JoinTable
-    private List<Product> products = new ArrayList<>();
+//    @ManyToMany
+//    @JoinTable
+//    private List<Product> products = new ArrayList<>();
 
     public Order() {
     }
@@ -36,13 +36,13 @@ public class Order {
         this.id = id;
         this.fulfilled = fulfilled;
         this.customer = customer;
-        this.products = products;
+//        this.products = products;
     }
 
-    public void addProduct(Product product) {
-        products.add(product);
-        product.addOrder(this);
-    }
+//    public void addProduct(Product product) {
+//        products.add(product);
+//        product.addOrder(this);
+//    }
 
     public Long getId() {
         return id;
@@ -60,9 +60,9 @@ public class Order {
         return customer;
     }
 
-    public List<Product> getProducts() {
-        return products;
-    }
+//    public List<Product> getProducts() {
+//        return products;
+//    }
 
     public void setId(Long id) {
         this.id = id;

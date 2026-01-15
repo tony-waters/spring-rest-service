@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.bit1.spring_backend_services.dto.CustomerDto;
 import uk.bit1.spring_backend_services.entity.Customer;
+import uk.bit1.spring_backend_services.entity.Order;
 import uk.bit1.spring_backend_services.repository.CustomerRepository;
 
 import java.util.List;
@@ -12,29 +13,44 @@ import java.util.Optional;
 @Service
 public class CustomerService {
 
-    @Autowired
-    private CustomerRepository customerRepository;
+    private final CustomerRepository customerRepository;
+
+    private final CustomerMapper customerMapper;
+
+    public CustomerService(CustomerRepository customerRepository, CustomerMapper customerMapper) {
+        this.customerRepository = customerRepository;
+        this.customerMapper = customerMapper;
+    }
 
     public List<CustomerDto> getAllCustomers() {
         List<Customer> customers = customerRepository.findAll();
-        return CustomerMapper.INSTANCE.map(customers);
+        return customerMapper.map(customers);
     }
 
     public List<CustomerDto> getAllCustomersWithOrders() {
         List<Customer> customers = customerRepository.findByOrdersNotEmpty();
-        return CustomerMapper.INSTANCE.map(customers);
+        return customerMapper.map(customers);
     }
 
     public CustomerDto getCustomerById(Long id) {
         Optional<Customer> customer = customerRepository.findById(id);
-        return  CustomerMapper.INSTANCE.toDto(customer.get());
+        return  customerMapper.toDto(customer.get());
     }
 
     public CustomerDto addCustomer(CustomerDto customerDto) {
-        Customer customer = CustomerMapper.INSTANCE.toEntity(customerDto);
+        Customer customer = customerMapper.toEntity(customerDto);
         customerRepository.save(customer);
-        return CustomerMapper.INSTANCE.toDto(customer);
+        return customerMapper.toDto(customer);
     }
 
+    public CustomerDto addOrderToCustomer(Long customerId, String orderDescription) {
+        Customer customer = customerRepository.findById(customerId).get();
+        Order order = new Order(orderDescription);
+        customer.addOrder(order);
+        return customerMapper.toDto(customerRepository.save(customer));
+    }
 
+//    public  CustomerDto updateCustomer(CustomerDto customerDto) {
+//
+//    }
 }
