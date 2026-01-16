@@ -43,8 +43,8 @@ public class CustomerService {
 
     public CustomerDto addCustomer(CustomerDto customerDto) {
         Customer customer = customerMapper.toEntity(customerDto);
-        customerRepository.save(customer);
-        return customerMapper.toDto(customer);
+        Customer saved = customerRepository.save(customer);
+        return customerMapper.toDto(saved);
     }
 
     public CustomerDto addOrderToCustomer(Long customerId, String orderDescription) {

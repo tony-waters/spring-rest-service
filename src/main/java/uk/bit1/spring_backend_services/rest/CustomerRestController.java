@@ -1,43 +1,46 @@
 package uk.bit1.spring_backend_services.rest;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import uk.bit1.spring_backend_services.dto.CustomerDto;
 import uk.bit1.spring_backend_services.service.CustomerService;
 
 import java.util.List;
 
 @RestController
+@RequestMapping("/customers")
 public class CustomerRestController {
 
-    @Autowired
-    private CustomerService customerService;
+    private final CustomerService customerService;
 
-    @GetMapping("/customer")
-    public CustomerDto getCustomer(Long id) {
+    public CustomerRestController(CustomerService customerService) {
+        this.customerService = customerService;
+    }
+
+    @GetMapping("/{id}")
+    public CustomerDto getCustomer(@PathVariable Long id) {
         return customerService.getCustomerById(id);
     }
 
-    @GetMapping("/addCustomer")
-    public CustomerDto addCustomer(CustomerDto customerDto) {
+    @PostMapping
+    public CustomerDto addCustomer(@RequestBody CustomerDto customerDto) {
         return customerService.addCustomer(customerDto);
     }
 
-    @GetMapping("/addOrderToCustomer")
-    public CustomerDto addOrderToCustomer(Long customerId, String orderDescription) {
-        return customerService.addOrderToCustomer(customerId, orderDescription);
+    @PostMapping("/{id}/orders")
+    public CustomerDto addOrderToCustomer(
+            @PathVariable Long id,
+            @RequestParam String orderDescription) {
+        return customerService.addOrderToCustomer(id, orderDescription);
     }
 
-    @GetMapping("/customers")
+    @GetMapping
     public List<CustomerDto> getAllCustomers() {
         return customerService.getAllCustomers();
     }
 
-    @GetMapping("/customers-with-orders")
+    @GetMapping("/with-orders")
     public List<CustomerDto> getAllCustomersWithOrders() {
         return customerService.getAllCustomersWithOrders();
     }
 }
-
-

@@ -6,9 +6,12 @@ import uk.bit1.spring_backend_services.entity.Customer;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = { OrderMapper.class })
 public interface CustomerMapper {
+
     Customer toEntity(CustomerDto dto);
+
     CustomerDto toDto(Customer entity);
+
     List<CustomerDto> map(List<Customer> customers);
 }

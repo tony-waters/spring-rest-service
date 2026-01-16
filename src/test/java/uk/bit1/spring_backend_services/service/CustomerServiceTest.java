@@ -1,108 +1,193 @@
 package uk.bit1.spring_backend_services.service;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.bit1.spring_backend_services.dto.CustomerDto;
 import uk.bit1.spring_backend_services.entity.Customer;
+import uk.bit1.spring_backend_services.entity.Order;
 import uk.bit1.spring_backend_services.repository.CustomerRepository;
 
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
-//@SpringBootTest
-@ActiveProfiles("test")
-@Transactional
-@DataJpaTest
+@ExtendWith(MockitoExtension.class)
 class CustomerServiceTest {
 
-    @Autowired
+    @Mock
     private CustomerRepository customerRepository;
 
-    @Autowired
+    @Mock
     private CustomerMapper customerMapper;
 
-//    @Autowired
-    private CustomerService customerService = new CustomerService(customerRepository, customerMapper);
-
-
-//    @BeforeAll
-//    static void setup() {
-//        this.customerService = new CustomerService();
-//    }
+    @InjectMocks
+    private CustomerService customerService;
 
     @Test
-    void doNothing() {
-
-    }
-
-    @Test
-    void addCustomer_persistsAndCanBeReloaded() {
-        // Act
-        CustomerDto saved = customerService.addCustomer(
-                new CustomerDto(null, "Smith", "Jane", List.of())
+    void getAllCustomers_mapsEntitiesToDtos() {
+        // arrange
+        List<Customer> customers = List.of(
+                new Customer(1L, "Smith", "Jane"),
+                new Customer(2L, "Jones", "Bob")
         );
 
-        // Assert
-        assertNotNull(saved);
-        assertNotNull(saved.id(), "Expected saved CustomerDto to have an id");
+        List<CustomerDto> dtos = List.of(
+                new CustomerDto(1L, "Smith", "Jane", List.of()),
+                new CustomerDto(2L, "Jones", "Bob", List.of())
+        );
 
-        Customer reloaded = customerRepository.findById(saved.id()).orElseThrow();
-        assertEquals("Smith", reloaded.getLastName());
-        assertEquals("Jane", reloaded.getFirstName());
+        when(customerRepository.findAll()).thenReturn(customers);
+        when(customerMapper.map(customers)).thenReturn(dtos);
+
+        // act
+        List<CustomerDto> result = customerService.getAllCustomers();
+
+        // assert
+        assertThat(result).isEqualTo(dtos);
+
+        verify(customerRepository).findAll();
+        verify(customerMapper).map(customers);
+        verifyNoMoreInteractions(customerRepository, customerMapper);
     }
 
     @Test
-    void getAllCustomers_returnsAllPersistedCustomers() {
-        // Arrange (persist via repository to set up DB state)
-        customerRepository.save(new Customer("Smith", "Jane"));
-        customerRepository.save(new Customer("Jones", "Bob"));
+    void getAllCustomersWithOrders_usesCustomRepoMethod_andMaps() {
+        // arrange
+        List<Customer> customersWithOrders = List.of(
+                new Customer(1L, "Smith", "Jane", List.of(new Order("Order 1")))
+        );
 
-        // Act
-        List<CustomerDto> customers = customerService.getAllCustomers();
+        List<CustomerDto> dtos = List.of(
+                new CustomerDto(1L, "Smith", "Jane", List.of())
+        );
 
-        // Assert
-        assertNotNull(customers);
-        assertEquals(2, customers.size());
-    }
+        when(customerRepository.findByOrdersNotEmpty()).thenReturn(customersWithOrders);
+        when(customerMapper.map(customersWithOrders)).thenReturn(dtos);
 
-    @Test
-    void addOrderToCustomer_persistsOrderAndLinksToCustomer() {
-        // Arrange
-        Customer customer = customerRepository.save(new Customer("Smith", "Jane"));
-
-        // Act
-        customerService.addOrderToCustomer(customer.getId(), "H2 order");
-
-        // Assert (reload from DB)
-        Customer reloaded = customerRepository.findById(customer.getId()).orElseThrow();
-        assertEquals(1, reloaded.getOrders().size());
-        assertEquals("H2 order", reloaded.getOrders().get(0).getDescription());
-
-        // Relationship check (ManyToOne)
-        assertNotNull(reloaded.getOrders().get(0).getCustomer());
-        assertEquals(reloaded.getId(), reloaded.getOrders().get(0).getCustomer().getId());
-    }
-
-    @Test
-    void getAllCustomersWithOrders_returnsOnlyCustomersThatHaveOrders() {
-        // Arrange
-        Customer noOrders = customerRepository.save(new Customer("NoOrders", "Nina"));
-        Customer hasOrders = customerRepository.save(new Customer("HasOrders", "Harry"));
-
-        customerService.addOrderToCustomer(hasOrders.getId(), "Order 1");
-
-        // Act
+        // act
         List<CustomerDto> result = customerService.getAllCustomersWithOrders();
 
-        // Assert
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals("HasOrders", result.get(0).lastName());
+        // assert
+        assertThat(result).isEqualTo(dtos);
+
+        verify(customerRepository).findByOrdersNotEmpty();
+        verify(customerMapper).map(customersWithOrders);
+        verifyNoMoreInteractions(customerRepository, customerMapper);
+    }
+
+    @Test
+    void getCustomerById_findsEntity_andMapsToDto() {
+        // arrange
+        Customer entity = new Customer(10L, "Brown", "Charlie");
+        CustomerDto dto = new CustomerDto(10L, "Brown", "Charlie", List.of());
+
+        when(customerRepository.findById(10L)).thenReturn(Optional.of(entity));
+        when(customerMapper.toDto(entity)).thenReturn(dto);
+
+        // act
+        CustomerDto result = customerService.getCustomerById(10L);
+
+        // assert
+        assertThat(result).isEqualTo(dto);
+
+        verify(customerRepository).findById(10L);
+        verify(customerMapper).toDto(entity);
+        verifyNoMoreInteractions(customerRepository, customerMapper);
+    }
+
+    @Test
+    void getCustomerById_whenMissing_throwsNoSuchElementException() {
+        // arrange
+        when(customerRepository.findById(123L)).thenReturn(Optional.empty());
+
+        // act + assert
+        assertThatThrownBy(() -> customerService.getCustomerById(123L))
+                .isInstanceOf(NoSuchElementException.class);
+
+        verify(customerRepository).findById(123L);
+        verifyNoMoreInteractions(customerRepository, customerMapper);
+    }
+
+    @Test
+    void addCustomer_mapsDtoToEntity_saves_andReturnsDto() {
+        // arrange
+        CustomerDto inputDto = new CustomerDto(null, "Taylor", "Alex", List.of());
+
+        Customer entityToSave = new Customer(null, "Taylor", "Alex");
+        Customer savedEntity = new Customer(99L, "Taylor", "Alex");
+
+        CustomerDto outputDto = new CustomerDto(99L, "Taylor", "Alex", List.of());
+
+        when(customerMapper.toEntity(inputDto)).thenReturn(entityToSave);
+        when(customerRepository.save(entityToSave)).thenReturn(savedEntity);
+        when(customerMapper.toDto(savedEntity)).thenReturn(outputDto);
+
+        // act
+        CustomerDto result = customerService.addCustomer(inputDto);
+
+        // assert
+        assertThat(result).isEqualTo(outputDto);
+
+        verify(customerMapper).toEntity(inputDto);
+        verify(customerRepository).save(entityToSave);
+        verify(customerMapper).toDto(savedEntity);
+        verifyNoMoreInteractions(customerRepository, customerMapper);
+    }
+
+    @Test
+    void addOrderToCustomer_createsOrder_addsToCustomer_saves_andReturnsDto() {
+        // arrange
+        Long customerId = 5L;
+        String description = "New order";
+
+        Customer customer = new Customer(customerId, "Doe", "Jane");
+
+        when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+
+        ArgumentCaptor<Customer> captor = ArgumentCaptor.forClass(Customer.class);
+
+        when(customerRepository.save(any(Customer.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        CustomerDto mappedDto = new CustomerDto(customerId, "Doe", "Jane", List.of());
+        when(customerMapper.toDto(any(Customer.class))).thenReturn(mappedDto);
+
+        // act
+        CustomerDto result = customerService.addOrderToCustomer(customerId, description);
+
+        // assert
+        assertThat(result).isEqualTo(mappedDto);
+
+        verify(customerRepository).findById(customerId);
+        verify(customerRepository).save(captor.capture());
+        verify(customerMapper).toDto(any(Customer.class));
+        verifyNoMoreInteractions(customerRepository, customerMapper);
+
+        Customer savedCustomer = captor.getValue();
+        assertThat(savedCustomer.getOrders()).hasSize(1);
+
+        Order savedOrder = savedCustomer.getOrders().get(0);
+        assertThat(savedOrder.getDescription()).isEqualTo(description);
+        assertThat(savedOrder.getCustomer()).isSameAs(savedCustomer);
+    }
+
+    @Test
+    void addOrderToCustomer_whenMissingCustomer_throwsNoSuchElementException() {
+        // arrange
+        when(customerRepository.findById(404L)).thenReturn(Optional.empty());
+
+        // act + assert
+        assertThatThrownBy(() -> customerService.addOrderToCustomer(404L, "X"))
+                .isInstanceOf(NoSuchElementException.class);
+
+        verify(customerRepository).findById(404L);
+        verifyNoMoreInteractions(customerRepository, customerMapper);
     }
 }

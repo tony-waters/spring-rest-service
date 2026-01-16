@@ -1,83 +1,123 @@
 package uk.bit1.spring_backend_services.rest;
 
-import jakarta.transaction.Transactional;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 import uk.bit1.spring_backend_services.dto.CustomerDto;
-import uk.bit1.spring_backend_services.dto.OrderDto;
+import uk.bit1.spring_backend_services.service.CustomerService;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
-@Transactional
-public class CustomerRestControllerTest {
+@WebMvcTest(CustomerRestController.class)
+class CustomerRestControllerTest {
 
     @Autowired
-    private CustomerRestController customerRestController;
+    private MockMvc mockMvc;
+
+    @MockBean
+    private CustomerService customerService;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Test
-    void getCustomerById() {
-        CustomerDto newCustomerDto = new CustomerDto(null, "Bloggs", "Jo", null);
-        CustomerDto returnedCustomerDto = customerRestController.addCustomer(newCustomerDto);
+    void getCustomer_byId_returnsCustomerDto() throws Exception {
+        // arrange
+        CustomerDto dto = new CustomerDto(1L, "Smith", "Jane", List.of());
+        when(customerService.getCustomerById(1L)).thenReturn(dto);
 
-        CustomerDto customerDto = customerRestController.getCustomer(returnedCustomerDto.id());
-        assertEquals("Bloggs", customerDto.lastName());
-    }
-
-
-    @Test
-    void getAllCustomers() {
-        List<CustomerDto> customerDtos = customerRestController.getAllCustomers();
-        assertEquals(0L, customerDtos.size());
-    }
-
-//    @Test
-//    void getAllCustomersWithOrders() {
-//        for(int i=0; i<100; i++) {
-//            customerRestController.addCustomer(new CustomerDto(null, "Bloggs${i}", "Jo${i}", null));
-//        }
-//        for(int i=100; i<103; i++) {
-//            CustomerDto newCustomer = customerRestController.addCustomer(new CustomerDto(null, "Bloggs${i}", "Jo${i}", null));
-//            assertNotNull(newCustomer.id());
-////            List<OrderDto> orders = new ArrayList<>();
-//            orders.add(new OrderDto(null, "Test Order ${i}", Boolean.FALSE, null, null));
-//            customerRestController.addCustomer(newCustomer);
-//        }
-//        List<CustomerDto> customerDtos = customerRestController.getAllCustomersWithOrders();
-//        assertEquals(3L, customerDtos.size());
-//    }
-
-    @Test
-    void addCustomer() {
-        CustomerDto newCustomerDto = new CustomerDto(null, "Bloggs", "Jo", null);
-        CustomerDto returnedCustomerDto = customerRestController.addCustomer(newCustomerDto);
-        assertNull(newCustomerDto.id());
-        assertNotNull(returnedCustomerDto.id());
+        // act + assert
+        mockMvc.perform(get("/customers/{id}", 1L))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.lastName").value("Smith"))
+                .andExpect(jsonPath("$.firstName").value("Jane"))
+                .andExpect(jsonPath("$.orders").isArray());
     }
 
     @Test
-    void addOrderToCustomer() {
-        CustomerDto newCustomerDto = new CustomerDto(null, "Bloggs", "Jo", null);
-        CustomerDto returnedCustomerDto = customerRestController.addCustomer(newCustomerDto);
-        assertNotNull(returnedCustomerDto.id());
+    void addCustomer_postBody_returnsSavedCustomer() throws Exception {
+        // arrange
+        CustomerDto requestBody = new CustomerDto(null, "Taylor", "Alex", List.of());
+        CustomerDto responseBody = new CustomerDto(99L, "Taylor", "Alex", List.of());
 
-        returnedCustomerDto = customerRestController.addOrderToCustomer(returnedCustomerDto.id(), "Test order");
+        when(customerService.addCustomer(any(CustomerDto.class))).thenReturn(responseBody);
 
-        CustomerDto updatedCustomerDto = customerRestController.getCustomer(returnedCustomerDto.id());
-        assertNotNull(updatedCustomerDto.orders());
-        assertEquals(1L, updatedCustomerDto.orders().size());
+        // act + assert
+        mockMvc.perform(post("/customers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requestBody)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(99))
+                .andExpect(jsonPath("$.lastName").value("Taylor"))
+                .andExpect(jsonPath("$.firstName").value("Alex"));
     }
 
     @Test
-    void addManyCustomers() {
-        for(int i=0; i<1000; i++) {
-            customerRestController.addCustomer(new CustomerDto(null, "Bloggs${i}", "Jo${i}", null));
-        }
-        List<CustomerDto> customerDtos = customerRestController.getAllCustomers();
-        assertEquals(1000L, customerDtos.size());
+    void addOrderToCustomer_post_returnsUpdatedCustomer() throws Exception {
+        // arrange
+        CustomerDto responseBody = new CustomerDto(5L, "Doe", "Jane", List.of());
+        when(customerService.addOrderToCustomer(5L, "New order")).thenReturn(responseBody);
+
+        // act + assert
+        mockMvc.perform(post("/customers/{id}/orders", 5L)
+                        .param("orderDescription", "New order"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(5))
+                .andExpect(jsonPath("$.lastName").value("Doe"))
+                .andExpect(jsonPath("$.firstName").value("Jane"));
+    }
+
+    @Test
+    void addOrderToCustomer_missingOrderDescription_returns400() throws Exception {
+        mockMvc.perform(post("/customers/{id}/orders", 5L))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void getAllCustomers_returnsList() throws Exception {
+        // arrange
+        List<CustomerDto> customers = List.of(
+                new CustomerDto(1L, "Smith", "Jane", List.of()),
+                new CustomerDto(2L, "Jones", "Bob", List.of())
+        );
+        when(customerService.getAllCustomers()).thenReturn(customers);
+
+        // act + assert
+        mockMvc.perform(get("/customers"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[1].id").value(2));
+    }
+
+    @Test
+    void getAllCustomersWithOrders_returnsList() throws Exception {
+        // arrange
+        List<CustomerDto> customers = List.of(
+                new CustomerDto(1L, "Smith", "Jane", List.of())
+        );
+        when(customerService.getAllCustomersWithOrders()).thenReturn(customers);
+
+        // act + assert
+        mockMvc.perform(get("/customers/with-orders"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].lastName").value("Smith"));
     }
 }

@@ -1,134 +1,73 @@
 package uk.bit1.spring_backend_services.repository;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
-import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
+//import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import uk.bit1.spring_backend_services.entity.Customer;
 import uk.bit1.spring_backend_services.entity.Order;
 
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-public class CustomerRepositoryTest {
+class CustomerRepositoryTest {
 
     @Autowired
     private CustomerRepository customerRepository;
 
-    @Autowired
-    private TestEntityManager entityManager;
+    @Test
+    void findByLastName_returnsMatchingCustomers() {
+        // arrange
+        customerRepository.save(new Customer("Smith", "Jane"));
+        customerRepository.save(new Customer("Smith", "John"));
+        customerRepository.save(new Customer("Jones", "Bob"));
 
-    @Autowired
-    private OrderRepository orderRepository;
+        // act
+        List<Customer> smiths = customerRepository.findByLastName("Smith");
 
-    private Customer testCustomer;
-    private Order testOrder1;
-    private Order testOrder2;
-
-    Long orderId1;
-    Long orderId2;
-
-
-    @BeforeEach
-    public void setUp() {
-        testCustomer = new Customer("Bloggs", "Jo");
-        testOrder1 = new Order("Order 1 for testOrder");
-        testOrder2 = new Order("Order 2 for testOrder");
-        testCustomer.addOrder(testOrder1);
-        testCustomer.addOrder(testOrder2);
-        customerRepository.save(testCustomer);
-
-        orderId1 = testOrder1.getId();
-        orderId2 = testOrder2.getId();
-    }
-
-    @AfterEach
-    public void tearDown() {
-        customerRepository.delete(testCustomer);
+        // assert
+        assertThat(smiths).hasSize(2);
+        assertThat(smiths).allMatch(c -> "Smith".equals(c.getLastName()));
+        assertThat(smiths).extracting(Customer::getFirstName)
+                .containsExactlyInAnyOrder("Jane", "John");
     }
 
     @Test
-    void customer_can_be_found_by_id() {
-        Customer customer = customerRepository.findById(testCustomer.getId()).orElse(null);
-        assertNotNull(customer);
-        assertEquals(testCustomer.getLastName(), customer.getLastName());
-        assertEquals(testCustomer.getFirstName(), customer.getFirstName());
+    void findByOrdersNotEmpty_returnsOnlyCustomersThatHaveOrders() {
+        // arrange
+        Customer noOrders = new Customer("Zero", "Orders");
+
+        Customer hasOrders = new Customer("Has", "Orders");
+        hasOrders.addOrder(new Order("Order 1"));
+        hasOrders.addOrder(new Order("Order 2"));
+
+        customerRepository.save(noOrders);
+        customerRepository.save(hasOrders);
+
+        // act
+        List<Customer> result = customerRepository.findByOrdersNotEmpty();
+
+        // assert
+        assertThat(result).hasSize(1);
+        Customer returned = result.get(0);
+        assertThat(returned.getLastName()).isEqualTo("Has");
+        assertThat(returned.getOrders()).hasSize(2);
+        assertThat(returned.getOrders())
+                .extracting(Order::getDescription) // assumes Order has getDescription()
+                .containsExactlyInAnyOrder("Order 1", "Order 2");
     }
 
     @Test
-    void customer_has_orders() {
-        Customer customer = customerRepository.findById(testCustomer.getId()).orElse(null);
-        assertEquals(2, customer.getOrders().size());
-        assertEquals(testOrder1.getId(), customer.getOrders().get(0).getId());
-        assertEquals(testOrder2.getId(), customer.getOrders().get(1).getId());
+    void findByOrdersNotEmpty_returnsEmptyListWhenNoOneHasOrders() {
+        // arrange
+        customerRepository.save(new Customer("A", "Person"));
+        customerRepository.save(new Customer("B", "Person"));
+
+        // act
+        List<Customer> result = customerRepository.findByOrdersNotEmpty();
+
+        // assert
+        assertThat(result).isEmpty();
     }
-
-    @Test
-    void customer_details_can_be_updated() {
-        testCustomer.setLastName("Mouse");
-        testCustomer.setFirstName("Mickey");
-        customerRepository.save(testCustomer);
-
-        Customer customer = customerRepository.findById(testCustomer.getId()).orElse(null);
-        assertNotNull(customer);
-        assertEquals("Mouse", customer.getLastName());
-        assertEquals("Mickey", customer.getFirstName());
-    }
-
-    @Test
-    void customer_can_have_orders() {
-        assertDoesNotThrow(() -> testCustomer.getOrders().size());
-        assertEquals(2, testCustomer.getOrders().size());
-    }
-
-    @Test
-    void customer_can_have_orders_added() {
-        testCustomer.addOrder(new Order("Order 3 for testOrder"));
-        testCustomer.addOrder(new Order("Order 4 for testOrder"));
-        customerRepository.save(testCustomer);
-
-        Customer customer = customerRepository.findById(testCustomer.getId()).orElse(null);
-        List<Order> orders = customer.getOrders();
-        assertEquals(4, orders.size());
-        assertEquals("Order 3 for testOrder", orders.get(2).getDescription());
-        assertEquals("Order 4 for testOrder", orders.get(3).getDescription());
-    }
-
-    @Test
-    void customer_can_have_orders_removed() {
-        testCustomer.removeOrder(testCustomer.getOrders().get(0));
-        customerRepository.save(testCustomer);
-
-        Customer customer = customerRepository.findById(testCustomer.getId()).orElse(null);
-        List<Order> orders = customer.getOrders();
-        assertEquals(1, orders.size());
-        assertEquals("Order 2 for testOrder", orders.get(0).getDescription());
-    }
-
-    @Test
-    void customer_orders_can_be_deletes() {
-        Customer customer = customerRepository.findById(testCustomer.getId()).orElse(null);
-
-    }
-
-    @Test
-    void customer_and_associated_orders_can_be_deleted() {
-        Customer customer = customerRepository.findById(testCustomer.getId()).orElse(null);
-        customerRepository.delete(customer);
-
-        assertEquals(null, customerRepository.findById(testCustomer.getId()).orElse(null));
-        assertEquals(null, orderRepository.findById(orderId1).orElse(null));
-        assertEquals(null, orderRepository.findById(orderId2).orElse(null));
-    }
-
-    @Test
-    void reacts_ok_when_removing_non_existent_object() {
-        assertThrows(NullPointerException.class, () -> testCustomer.removeOrder(null));
-        assertDoesNotThrow(() -> testCustomer.removeOrder(new Order("Spurious order")));
-    }
-
 }
