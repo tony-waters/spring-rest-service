@@ -2,12 +2,14 @@ package uk.bit1.spring_backend_services.repository;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
+
 import uk.bit1.spring_backend_services.entity.Customer;
 import uk.bit1.spring_backend_services.entity.Order;
 
 import java.util.List;
-import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
