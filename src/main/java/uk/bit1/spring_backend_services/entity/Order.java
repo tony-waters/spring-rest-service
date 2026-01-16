@@ -13,11 +13,10 @@ public class Order {
     private Long id;
 
     private String description;
-
     private Boolean fulfilled = false;
 
-    @ManyToOne
-    @JoinColumn(name = "customer_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
 //    @ManyToMany
