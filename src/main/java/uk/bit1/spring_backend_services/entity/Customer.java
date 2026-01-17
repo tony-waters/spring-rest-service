@@ -23,6 +23,10 @@ public class Customer {
     )
     private List<Order> orders = new ArrayList<>();
 
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "contact_info_id")
+    private ContactInfo contactInfo;
+
     public Customer() {}
 
     public Customer(String lastName, String firstName) {
@@ -64,6 +68,10 @@ public class Customer {
 
     public List<Order> getOrders() { return orders; }
 
+    public ContactInfo getContactInfo() {
+        return contactInfo;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -76,15 +84,26 @@ public class Customer {
         this.firstName = firstName;
     }
 
-    public void setOrders(List<Order> orders) {
-        this.orders = orders;
+    public void setContactInfo(ContactInfo contactInfo) {
+        this.contactInfo = contactInfo;
     }
 
     @Override
     public String toString() {
-        return String.format(
-                "[Customer[id=%d, firstName='%s', lastName='%s', orders='%s']",
-                id, firstName, lastName, orders
-        );
+        return "Customer{id=" + id + ", firstName=" + firstName + ", lastName=" + lastName +
+                ", orderCount=" + (orders == null ? 0 : orders.size()) + "}";
     }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Customer other)) return false;
+        return id != null && id.equals(other.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
+
 }

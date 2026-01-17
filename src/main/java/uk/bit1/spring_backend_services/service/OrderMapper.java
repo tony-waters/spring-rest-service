@@ -7,7 +7,7 @@ import uk.bit1.spring_backend_services.entity.Order;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = { ProductMapper.class })
 public interface OrderMapper {
 
     // Entity → DTO

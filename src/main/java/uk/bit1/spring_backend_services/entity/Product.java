@@ -3,7 +3,9 @@ package uk.bit1.spring_backend_services.entity;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 public class Product {
@@ -13,11 +15,10 @@ public class Product {
     private Long id;
 
     private String name;
-
     private String description;
 
-    @ManyToMany
-    private List<Order> orders = new ArrayList<>();
+    @ManyToMany(mappedBy = "products", fetch = FetchType.LAZY)
+    private Set<Order> orders = new HashSet<>();
 
     protected Product() {
     }
@@ -43,7 +44,7 @@ public class Product {
         return description;
     }
 
-    public List<Order> getOrders() {
+    public Set<Order> getOrders() {
         return orders;
     }
 
@@ -59,7 +60,15 @@ public class Product {
         this.description = description;
     }
 
-    public void setOrders(List<Order> orders) {
-        this.orders = orders;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Product other)) return false;
+        return id != null && id.equals(other.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

@@ -3,7 +3,9 @@ package uk.bit1.spring_backend_services.entity;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity(name = "CustomerOrder")
 public class Order {
@@ -19,9 +21,13 @@ public class Order {
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
-//    @ManyToMany
-//    @JoinTable
-//    private List<Product> products = new ArrayList<>();
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "order_products",
+            joinColumns = @JoinColumn(name = "order_id"),
+            inverseJoinColumns = @JoinColumn(name = "product_id")
+    )
+    private Set<Product> products = new HashSet<>();
 
     public Order() {
     }
@@ -38,10 +44,15 @@ public class Order {
 //        this.products = products;
     }
 
-//    public void addProduct(Product product) {
-//        products.add(product);
-//        product.addOrder(this);
-//    }
+    public void addProduct(Product product) {
+        products.add(product);
+        product.addOrder(this);
+    }
+
+    public void removeProduct(Product product) {
+        products.remove(product);
+        product.getOrders().remove(this);
+    }
 
     public Long getId() {
         return id;
@@ -85,4 +96,16 @@ public class Order {
                 "Order[id=%d, description='%s']",
                 id, description);
     }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Order other)) return false;
+        return id != null && id.equals(other.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
 }
