@@ -2,9 +2,7 @@ package uk.bit1.spring_backend_services.entity;
 
 import jakarta.persistence.*;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -18,7 +16,7 @@ public class Product {
     private String description;
 
     @ManyToMany(mappedBy = "products", fetch = FetchType.LAZY)
-    private Set<Order> orders = new HashSet<>();
+    private Set<CustomerOrder> customerOrders = new HashSet<>();
 
     protected Product() {
     }
@@ -28,9 +26,9 @@ public class Product {
         this.description = description;
     }
 
-    public void addOrder(Order order) {
-        orders.add(order);
-    }
+//    public void addOrder(CustomerOrder customerOrder) {
+//        customerOrders.add(customerOrder);
+//    }
 
     public Long getId() {
         return id;
@@ -44,8 +42,8 @@ public class Product {
         return description;
     }
 
-    public Set<Order> getOrders() {
-        return orders;
+    public Set<CustomerOrder> getOrders() {
+        return customerOrders;
     }
 
     public void setId(Long id) {

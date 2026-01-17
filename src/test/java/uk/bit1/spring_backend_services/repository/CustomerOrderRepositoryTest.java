@@ -5,16 +5,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
-import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
 import uk.bit1.spring_backend_services.entity.Customer;
-import uk.bit1.spring_backend_services.entity.Order;
+import uk.bit1.spring_backend_services.entity.CustomerOrder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @DataJpaTest
-public class OrderRepositoryTest {
+public class CustomerOrderRepositoryTest {
 
     @Autowired
     private CustomerRepository customerRepository;
@@ -23,13 +22,13 @@ public class OrderRepositoryTest {
     private OrderRepository orderRepository;
 
     private Customer testCustomer;
-    private Order testOrder;
+    private CustomerOrder testCustomerOrder;
 
     @BeforeEach
     public void setUp() {
-        testOrder = new Order("Test Order 1");
+        testCustomerOrder = new CustomerOrder("Test Order 1");
         testCustomer = new Customer("Bloggs", "Jo");
-        testCustomer.addOrder(testOrder);
+        testCustomer.addOrder(testCustomerOrder);
         customerRepository.save(testCustomer);
     }
 
@@ -40,17 +39,17 @@ public class OrderRepositoryTest {
 
     @Test
     void order_can_be_found_by_id() {
-        Order order = orderRepository.findById(testOrder.getId()).orElse(null);
-        assertNotNull(order);
-        assertEquals(testOrder.getDescription(), order.getDescription());
+        CustomerOrder customerOrder = orderRepository.findById(testCustomerOrder.getId()).orElse(null);
+        assertNotNull(customerOrder);
+        assertEquals(testCustomerOrder.getDescription(), customerOrder.getDescription());
     }
 
     @Test
     void customer_can_be_found_through_order() {
-        Order order = orderRepository.findById(testOrder.getId()).orElse(null);
-        assertNotNull(order);
+        CustomerOrder customerOrder = orderRepository.findById(testCustomerOrder.getId()).orElse(null);
+        assertNotNull(customerOrder);
 
-        Customer customer = order.getCustomer();
+        Customer customer = customerOrder.getCustomer();
         assertEquals(testCustomer.getId(), customer.getId());
         assertEquals(testCustomer.getLastName(), customer.getLastName());
         assertEquals(testCustomer.getFirstName(), customer.getFirstName());
@@ -59,7 +58,7 @@ public class OrderRepositoryTest {
     @Test
     void order_details_can_be_updated() {
         String newDescription = "Updated description";
-        testOrder.setDescription(newDescription);
+        testCustomerOrder.setDescription(newDescription);
         customerRepository.save(testCustomer);
 
         Customer customer = customerRepository.findById(testCustomer.getId()).orElse(null);

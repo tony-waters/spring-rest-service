@@ -2,20 +2,19 @@ package uk.bit1.spring_backend_services.entity;
 
 import jakarta.persistence.*;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 @Entity(name = "CustomerOrder")
-public class Order {
+public class CustomerOrder {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     private String description;
-    private Boolean fulfilled = false;
+    private boolean fulfilled = false;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "customer_id", nullable = false)
@@ -29,24 +28,23 @@ public class Order {
     )
     private Set<Product> products = new HashSet<>();
 
-    public Order() {
+    public CustomerOrder() {
     }
 
-    public Order(String description) {
+    public CustomerOrder(String description) {
         this.description = description;
     }
 
-    public Order(Long id, String description, Boolean fulfilled, Customer customer, List<Product> products) {
+    public CustomerOrder(Long id, String description, Boolean fulfilled, Customer customer) {
         this(description);
         this.id = id;
         this.fulfilled = fulfilled;
         this.customer = customer;
-//        this.products = products;
     }
 
     public void addProduct(Product product) {
         products.add(product);
-        product.addOrder(this);
+        product.getOrders().add(this);
     }
 
     public void removeProduct(Product product) {
@@ -62,7 +60,7 @@ public class Order {
         return description;
     }
 
-    public Boolean getFulfilled() {
+    public boolean getFulfilled() {
         return fulfilled;
     }
 
@@ -70,9 +68,9 @@ public class Order {
         return customer;
     }
 
-//    public List<Product> getProducts() {
-//        return products;
-//    }
+    public Set<Product> getProducts() {
+        return products;
+    }
 
     public void setId(Long id) {
         this.id = id;
@@ -82,7 +80,7 @@ public class Order {
         this.description = description;
     }
 
-    public void setFulfilled(Boolean fulfilled) {
+    public void setFulfilled(boolean fulfilled) {
         this.fulfilled = fulfilled;
     }
 
@@ -99,7 +97,7 @@ public class Order {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Order other)) return false;
+        if (!(o instanceof CustomerOrder other)) return false;
         return id != null && id.equals(other.id);
     }
 

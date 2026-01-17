@@ -21,11 +21,11 @@ public class Customer {
             orphanRemoval = true,
             fetch = FetchType.LAZY
     )
-    private List<Order> orders = new ArrayList<>();
+    private List<CustomerOrder> customerOrders = new ArrayList<>();
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "contact_info_id")
-    private ContactInfo contactInfo;
+    private CustomerContactInfo customerContactInfo;
 
     public Customer() {}
 
@@ -39,19 +39,19 @@ public class Customer {
         this.id = id;
     }
 
-    public Customer(Long id, String lastName, String firstName, List<Order> orders) {
-        this(id, lastName, firstName);
-        this.orders = orders;
+//    public Customer(Long id, String lastName, String firstName, List<CustomerOrder> customerOrders) {
+//        this(id, lastName, firstName);
+//        this.customerOrders = customerOrders;
+//    }
+
+    public void addOrder(CustomerOrder customerOrder) {
+        customerOrders.add(customerOrder);
+        customerOrder.setCustomer(this);
     }
 
-    public void addOrder(Order order) {
-        orders.add(order);
-        order.setCustomer(this);
-    }
-
-    public void removeOrder(Order order) {
-        orders.remove(order);
-        order.setCustomer(null);
+    public void removeOrder(CustomerOrder customerOrder) {
+        customerOrders.remove(customerOrder);
+        customerOrder.setCustomer(null);
     }
 
     public Long getId() {
@@ -66,10 +66,10 @@ public class Customer {
         return firstName;
     }
 
-    public List<Order> getOrders() { return orders; }
+    public List<CustomerOrder> getOrders() { return customerOrders; }
 
-    public ContactInfo getContactInfo() {
-        return contactInfo;
+    public CustomerContactInfo getCustomerContactInfo() {
+        return customerContactInfo;
     }
 
     public void setId(Long id) {
@@ -84,14 +84,14 @@ public class Customer {
         this.firstName = firstName;
     }
 
-    public void setContactInfo(ContactInfo contactInfo) {
-        this.contactInfo = contactInfo;
+    public void setCustomerContactInfo(CustomerContactInfo contactInfo) {
+        this.customerContactInfo = contactInfo;
     }
 
     @Override
     public String toString() {
         return "Customer{id=" + id + ", firstName=" + firstName + ", lastName=" + lastName +
-                ", orderCount=" + (orders == null ? 0 : orders.size()) + "}";
+                ", orderCount=" + (customerOrders == null ? 0 : customerOrders.size()) + "}";
     }
     @Override
     public boolean equals(Object o) {
