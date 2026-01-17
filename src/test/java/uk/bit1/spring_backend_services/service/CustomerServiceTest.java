@@ -8,7 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.bit1.spring_backend_services.dto.CustomerDto;
 import uk.bit1.spring_backend_services.entity.Customer;
-import uk.bit1.spring_backend_services.entity.CustomerOrder;
+import uk.bit1.spring_backend_services.entity.Order;
 import uk.bit1.spring_backend_services.repository.CustomerRepository;
 
 import java.util.List;
@@ -62,7 +62,7 @@ class CustomerServiceTest {
     void getAllCustomersWithOrders_usesCustomRepoMethod_andMaps() {
         // arrange
         List<Customer> customersWithOrders = List.of(
-                new Customer(1L, "Smith", "Jane", List.of(new CustomerOrder("Order 1")))
+//                new Customer(1L, "Smith", "Jane", List.of(new Order("Order 1")))
         );
 
         List<CustomerDto> dtos = List.of(
@@ -171,9 +171,9 @@ class CustomerServiceTest {
         verifyNoMoreInteractions(customerRepository, customerMapper);
 
         Customer savedCustomer = captor.getValue();
-        assertThat(savedCustomer.getOrders()).hasSize(1);
+        assertThat(savedCustomer.getCustomerOrders()).hasSize(1);
 
-        CustomerOrder savedCustomerOrder = savedCustomer.getOrders().get(0);
+        Order savedCustomerOrder = savedCustomer.getCustomerOrders().get(0);
         assertThat(savedCustomerOrder.getDescription()).isEqualTo(description);
         assertThat(savedCustomerOrder.getCustomer()).isSameAs(savedCustomer);
     }

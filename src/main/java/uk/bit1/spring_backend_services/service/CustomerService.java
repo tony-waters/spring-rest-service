@@ -3,7 +3,7 @@ package uk.bit1.spring_backend_services.service;
 import org.springframework.stereotype.Service;
 import uk.bit1.spring_backend_services.dto.CustomerDto;
 import uk.bit1.spring_backend_services.entity.Customer;
-import uk.bit1.spring_backend_services.entity.CustomerOrder;
+import uk.bit1.spring_backend_services.entity.Order;
 import uk.bit1.spring_backend_services.repository.CustomerRepository;
 
 import java.util.List;
@@ -48,7 +48,7 @@ public class CustomerService {
 
     public CustomerDto addOrderToCustomer(Long customerId, String orderDescription) {
         Customer customer = customerRepository.findById(customerId).get();
-        CustomerOrder customerOrder = new CustomerOrder(orderDescription);
+        Order customerOrder = new Order(orderDescription);
         customer.addOrder(customerOrder);
         return customerMapper.toDto(customerRepository.save(customer));
     }

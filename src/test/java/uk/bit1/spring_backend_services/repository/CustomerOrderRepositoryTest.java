@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 
 import uk.bit1.spring_backend_services.entity.Customer;
-import uk.bit1.spring_backend_services.entity.CustomerOrder;
+import uk.bit1.spring_backend_services.entity.Order;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -22,11 +22,11 @@ public class CustomerOrderRepositoryTest {
     private OrderRepository orderRepository;
 
     private Customer testCustomer;
-    private CustomerOrder testCustomerOrder;
+    private Order testCustomerOrder;
 
     @BeforeEach
     public void setUp() {
-        testCustomerOrder = new CustomerOrder("Test Order 1");
+        testCustomerOrder = new Order("Test Order 1");
         testCustomer = new Customer("Bloggs", "Jo");
         testCustomer.addOrder(testCustomerOrder);
         customerRepository.save(testCustomer);
@@ -39,14 +39,14 @@ public class CustomerOrderRepositoryTest {
 
     @Test
     void order_can_be_found_by_id() {
-        CustomerOrder customerOrder = orderRepository.findById(testCustomerOrder.getId()).orElse(null);
+        Order customerOrder = orderRepository.findById(testCustomerOrder.getId()).orElse(null);
         assertNotNull(customerOrder);
         assertEquals(testCustomerOrder.getDescription(), customerOrder.getDescription());
     }
 
     @Test
     void customer_can_be_found_through_order() {
-        CustomerOrder customerOrder = orderRepository.findById(testCustomerOrder.getId()).orElse(null);
+        Order customerOrder = orderRepository.findById(testCustomerOrder.getId()).orElse(null);
         assertNotNull(customerOrder);
 
         Customer customer = customerOrder.getCustomer();
@@ -63,7 +63,7 @@ public class CustomerOrderRepositoryTest {
 
         Customer customer = customerRepository.findById(testCustomer.getId()).orElse(null);
         assertNotNull(customer);
-        assertEquals(newDescription, customer.getOrders().get(0).getDescription());
+        assertEquals(newDescription, customer.getCustomerOrders().get(0).getDescription());
     }
 
 }

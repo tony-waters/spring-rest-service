@@ -12,11 +12,11 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @ManyToMany(mappedBy = "products", fetch = FetchType.LAZY)
+    private Set<Order> customerOrders = new HashSet<>();
+
     private String name;
     private String description;
-
-    @ManyToMany(mappedBy = "products", fetch = FetchType.LAZY)
-    private Set<CustomerOrder> customerOrders = new HashSet<>();
 
     protected Product() {
     }
@@ -42,7 +42,7 @@ public class Product {
         return description;
     }
 
-    public Set<CustomerOrder> getOrders() {
+    public Set<Order> getOrders() {
         return customerOrders;
     }
 

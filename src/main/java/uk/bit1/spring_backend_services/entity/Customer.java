@@ -12,8 +12,9 @@ public class Customer {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    private String lastName;
-    private String firstName;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "contact_info_id")
+    private ContactInfo customerContactInfo;
 
     @OneToMany(
             mappedBy = "customer",
@@ -21,11 +22,10 @@ public class Customer {
             orphanRemoval = true,
             fetch = FetchType.LAZY
     )
-    private List<CustomerOrder> customerOrders = new ArrayList<>();
+    private List<Order> customerOrders = new ArrayList<>();
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JoinColumn(name = "contact_info_id")
-    private CustomerContactInfo customerContactInfo;
+    private String lastName;
+    private String firstName;
 
     public Customer() {}
 
@@ -44,12 +44,12 @@ public class Customer {
 //        this.customerOrders = customerOrders;
 //    }
 
-    public void addOrder(CustomerOrder customerOrder) {
+    public void addOrder(Order customerOrder) {
         customerOrders.add(customerOrder);
         customerOrder.setCustomer(this);
     }
 
-    public void removeOrder(CustomerOrder customerOrder) {
+    public void removeOrder(Order customerOrder) {
         customerOrders.remove(customerOrder);
         customerOrder.setCustomer(null);
     }
@@ -66,9 +66,9 @@ public class Customer {
         return firstName;
     }
 
-    public List<CustomerOrder> getOrders() { return customerOrders; }
+    public List<Order> getCustomerOrders() { return customerOrders; }
 
-    public CustomerContactInfo getCustomerContactInfo() {
+    public ContactInfo getCustomerContactInfo() {
         return customerContactInfo;
     }
 
@@ -84,8 +84,11 @@ public class Customer {
         this.firstName = firstName;
     }
 
-    public void setCustomerContactInfo(CustomerContactInfo contactInfo) {
+    public void setCustomerContactInfo(ContactInfo contactInfo) {
         this.customerContactInfo = contactInfo;
+        if (contactInfo != null) {
+            contactInfo.setCustomer(this);
+        }
     }
 
     @Override

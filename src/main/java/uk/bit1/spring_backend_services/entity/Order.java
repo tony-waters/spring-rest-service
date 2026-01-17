@@ -3,18 +3,14 @@ package uk.bit1.spring_backend_services.entity;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Entity(name = "CustomerOrder")
-public class CustomerOrder {
+public class Order {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-
-    private String description;
-    private boolean fulfilled = false;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "customer_id", nullable = false)
@@ -28,23 +24,29 @@ public class CustomerOrder {
     )
     private Set<Product> products = new HashSet<>();
 
-    public CustomerOrder() {
+    private String description;
+    private boolean fulfilled = false;
+
+    public Order() {
     }
 
-    public CustomerOrder(String description) {
+    public Order(String description) {
         this.description = description;
     }
 
-    public CustomerOrder(Long id, String description, Boolean fulfilled, Customer customer) {
+    public Order(Long id, String description, boolean fulfilled, Customer customer) {
         this(description);
         this.id = id;
         this.fulfilled = fulfilled;
-        this.customer = customer;
+        setCustomer(customer);
     }
 
     public void addProduct(Product product) {
-        products.add(product);
-        product.getOrders().add(this);
+        // does this hide a problem? should it throw an exception if the product already exist?
+        // or should we change it back and allow it to fail?
+        if(products.add(product)) {
+            product.getOrders().add(this);
+        }
     }
 
     public void removeProduct(Product product) {
@@ -97,7 +99,7 @@ public class CustomerOrder {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof CustomerOrder other)) return false;
+        if (!(o instanceof Order other)) return false;
         return id != null && id.equals(other.id);
     }
 

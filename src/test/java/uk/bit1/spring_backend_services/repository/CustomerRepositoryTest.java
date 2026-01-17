@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 
 import uk.bit1.spring_backend_services.entity.Customer;
-import uk.bit1.spring_backend_services.entity.CustomerOrder;
+import uk.bit1.spring_backend_services.entity.Order;
 
 import java.util.List;
 
@@ -40,8 +40,8 @@ class CustomerRepositoryTest {
         Customer noOrders = new Customer("Zero", "Orders");
 
         Customer hasOrders = new Customer("Has", "Orders");
-        hasOrders.addOrder(new CustomerOrder("Order 1"));
-        hasOrders.addOrder(new CustomerOrder("Order 2"));
+        hasOrders.addOrder(new Order("Order 1"));
+        hasOrders.addOrder(new Order("Order 2"));
 
         customerRepository.save(noOrders);
         customerRepository.save(hasOrders);
@@ -53,9 +53,9 @@ class CustomerRepositoryTest {
         assertThat(result).hasSize(1);
         Customer returned = result.get(0);
         assertThat(returned.getLastName()).isEqualTo("Has");
-        assertThat(returned.getOrders()).hasSize(2);
-        assertThat(returned.getOrders())
-                .extracting(CustomerOrder::getDescription) // assumes Order has getDescription()
+        assertThat(returned.getCustomerOrders()).hasSize(2);
+        assertThat(returned.getCustomerOrders())
+                .extracting(Order::getDescription) // assumes Order has getDescription()
                 .containsExactlyInAnyOrder("Order 1", "Order 2");
     }
 
